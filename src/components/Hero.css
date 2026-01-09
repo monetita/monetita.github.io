@@ -1,0 +1,38 @@
+.hero-section {
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    color: black;
+    padding: 15% 20px;
+}
+
+.hero-text{
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    flex-direction: column;
+    gap: 80px;
+}
+
+.hero-title {
+    width: 50vw
+}
+.hero-subtitle {
+    width: 40vw;
+    margin-top: 20px;
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 20px;
+}
+
+
+
+
+

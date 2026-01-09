@@ -1,0 +1,216 @@
+body {
+-ms-overflow-style: none;  /* Hide scrollbar for Internet Explorer and Edge */
+    scrollbar-width: none;  /* Hide scrollbar for Firefox */
+    overflow: hidden;
+}
+
+#root {
+    margin: 0 auto;
+    text-align: center;
+    
+}
+
+.logo {
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+}
+
+
+.logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+
+
+@media (prefers-reduced-motion: no-preference) {
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
+}
+
+.card {
+    padding: 2em;
+}
+
+.read-the-docs {
+    color: #888;
+}
+
+#box1 {
+    height: 100vh;
+    background-color: lightblue;
+}
+#box2 {
+    height: 100vh;
+    background-color: lightgreen;
+}
+#box3 {
+    height: 100vh;
+    background-color: lightcoral;
+}
+#box4 {
+    height: 100vh;
+    background-color: lightgoldenrodyellow;
+}
+
+.section {
+    
+    height: 100vh;
+    position: relative;
+    scroll-snap-align: start;
+}
+
+.fullpage-wrapper {
+    z-index: -1;
+}
+
+
+/* #home {
+    height: 200vh;
+    position: relative;
+} */
+#main {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 100vh;
+    -ms-overflow-style: none;  /* Hide scrollbar for Internet Explorer and Edge */
+    scrollbar-width: none;  /* Hide scrollbar for Firefox */
+}
+
+#main::-webkit-scrollbar {
+    display: none;  /* Hide scrollbar for Chrome, Safari and Opera */
+}
+
+#hero-content {
+    /*background-color: #213547;*/
+}
+
+#about{
+    /*background-color: #888888;*/
+    /* top: -55vh; */
+}
+
+#projects {
+    /*background-color: #646cff;*/
+}
+
+#about, #projects, #contact {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    /* scroll-snap-align: start; */
+}
+
+#projects, #contact {
+    padding-top: 5vh ;
+}
+
+#hero {
+    /* position: absolute;
+    top:0; */
+    z-index: 100;
+    height: 100vh;
+    width: 100vw;
+    /* scroll-snap-align: start; */
+}
+
+#logo-container, .hero-background {
+    
+    width: 100vw;
+    /* height: 155vh; */
+    height: 100vh;;
+    z-index: 1;
+    pointer-events: none;
+    position: absolute;
+    /*width: 1000px;*/
+
+}
+
+.hero-background .hero-bubbles, .hero-background .hero-gears {
+    position: absolute;
+    top:0;
+    left: 0;
+    height: 100%;
+}
+
+.hero-background .hero-gears {
+    z-index: 20;
+}
+
+@media (max-width: 768px) {
+    .hero-background .hero-logo {
+        
+        position: relative;
+        /* bottom:calc(var(--svg-ratio, 1) * -10px); */
+        
+    }
+} 
+/*.hero-background svg{*/
+/*    z-index: -1;*/
+/*    display: block;*/
+/*    position: fixed;*/
+/*    width: 100vw;*/
+/*    left: 0px;*/
+/*    top: -10%;*/
+/*    padding: 0px;*/
+/*    margin: 0px;*/
+
+/*}*/
+
+/* .hero-background svg{
+    /*width: 100vw;
+    position: absolute;
+    z-index: 2;
+    display: block;
+    top: -17%;
+} */
+
+div {
+    /*border: solid black 1px;*/
+}
+
+/* Apply a transition to all target g elements */
+#bubbles, #gears { /* Replace with your actual IDs */
+  transition: opacity 2s ease;
+}
+
+/* This class makes the element fully transparent */
+.transparent {
+  opacity: 0;
+}
+
+.dot-nav {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: gray;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.dot.active {
+  background: #972E2E;
+}
+
+
+
+
+
