@@ -1,22 +1,21 @@
 import './App.css'
-import {Routes, Route} from 'react-router-dom';
-// import Header from "./components/Header.tsx";
+import { lazy, Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Home from "./pages/Home.tsx";
-import About from "./pages/About.tsx";
-import ProjectDetail from "./pages/ProjectDetail.tsx";
-import "./App.css";
+
+// These pages are never seen on initial load — defer their JS until needed
+const About = lazy(() => import("./pages/About.tsx"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail.tsx"));
 
 function App() {
     return (
-        <>
-            {/*<Header/>*/}
+        <Suspense fallback={null}>
             <Routes>
                 <Route path="/" element={<Home/>}/>
                 <Route path="/about" element={<About/>}/>
                 <Route path="/project/:title" element={<ProjectDetail/>}/>
             </Routes>
-
-        </>
+        </Suspense>
     )
 }
 

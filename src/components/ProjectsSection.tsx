@@ -1,16 +1,16 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import Section from './Section';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+// import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
-import { AnimatePresence } from 'motion/react';
 import ProjectBubble from './ProjectBubble';
 import { projects, ProjectData } from '../projects';
-
+import Grid from '@mui/material/Grid';
 interface ProjectsSectionProps {
     className?: string;
     ref?: React.RefObject<HTMLDivElement> | null;
     deviceType?: 'mobile' | 'tablet' | 'desktop';
+    animationState?: 'initial' | 'visible' | 'exitTop';
 }
 
 // Function to shuffle array (Fisher-Yates)
@@ -33,18 +33,19 @@ const getUniqueProjects = (allProjects: ProjectData[], numberOfProjects: number)
 const ProjectsSection: React.FC<ProjectsSectionProps> = ({
     className = "",
     ref = null,
-    deviceType = 'desktop'
+    deviceType = 'desktop',
+    animationState = 'initial',
 }) => {
     const theme = useTheme();
 
-    // Theme colors array
-    const themeColors = [
+    // Memoized so bubblePositions useMemo isn't invalidated on every render
+    const themeColors = useMemo(() => [
         theme.palette.color2.main, // #EC9A8D
         theme.palette.color3.main, // #F3A933
         theme.palette.color4.main, // #6C9289
         theme.palette.color5.main, // #C53650
         theme.palette.color6.main, // #972E2E
-    ];
+    ], [theme.palette.color2.main, theme.palette.color3.main, theme.palette.color4.main, theme.palette.color5.main, theme.palette.color6.main]);
 
     // Fixed bubble positions (5 bubbles)
     const bubblePositions = useMemo(() => [
@@ -79,18 +80,12 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         shuffleArray(projects).slice(0, bubblePositions.length)
     );
 
-    // Track rotation cycle for animation delays
-    const [rotationKey, setRotationKey] = useState(0);
-
     // Rotate projects with staggered timing
     useEffect(() => {
-        const rotationInterval = 12000; // Rotate every 12 seconds (longer interval)
+        const rotationInterval = 12000;
 
         const interval = setInterval(() => {
-            const newProjects = getUniqueProjects(projects, bubblePositions.length);
-            // Update all projects at once, but increment key to trigger staggered animations
-            setDisplayedProjects(newProjects);
-            setRotationKey(prev => prev + 1);
+            setDisplayedProjects(getUniqueProjects(projects, bubblePositions.length));
         }, rotationInterval);
 
         return () => clearInterval(interval);
@@ -98,59 +93,59 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
 
     return (
         <Section id="projects" ref={ref} className={`${className} projects-section`}>
-            <Box
+            <Grid container direction="column" justifyContent="center" alignItems="center"
                 sx={{
                     position: 'relative',
                     width: '100%',
-                    minHeight: '100vh',
+                    minHeight: '100dvh',
                     //   padding: { xs: '2rem 0', md: '4rem 0' },
                     overflow: 'hidden'
                 }}
             >
+                <Grid size={12}>
                 <Typography
                     variant="h1"
                     sx={{
                         textAlign: 'center',
                         // marginBottom: { xs: '2rem', md: '4rem' },
-                        zIndex: 2,
+                        // pt: '1rem',
                         position: 'relative'
                     }}
                 >
                     Projects
                 </Typography>
-
-                <Box
+                </Grid>
+                <Grid size={12}
+                
                     sx={{
                         position: 'relative',
                         width: '100%',
-                        minHeight: '80vh',
+                        minHeight: '80dvh',
+                        mb: {'xs': '4rem', 'md': '0rem'},
+
                         // marginTop: { xs: '2rem', md: '4rem' }
                     }}
                 >
-                    <AnimatePresence>
-                        {bubblePositions.map((position, index) => {
-                            const project = displayedProjects[index];
-                            if (!project) return null;
+                    {bubblePositions.map((position, index) => {
+                        const project = displayedProjects[index];
+                        if (!project) return null;
 
-                            // Calculate stagger delay based on index (600ms between each)
-                            const staggerDelay = index * 0.6;
-
-                            return (
-                                <ProjectBubble
-                                    key={`bubble-${index}-${project.title}-${rotationKey}`}
-                                    project={project}
-                                    x={position.x}
-                                    y={position.y}
-                                    size={position.size}
-                                    color={position.color}
-                                    animationDelay={staggerDelay}
-                                    deviceType={deviceType}
-                                />
-                            );
-                        })}
-                    </AnimatePresence>
-                </Box>
-            </Box>
+                        return (
+                            <ProjectBubble
+                                key={`bubble-${index}`}
+                                project={project}
+                                x={position.x}
+                                y={position.y}
+                                size={position.size}
+                                color={position.color}
+                                animationDelay={index * 0.12}
+                                deviceType={deviceType}
+                                animationState={animationState}
+                            />
+                        );
+                    })}
+                </Grid>
+            </Grid>
         </Section>
     );
 };

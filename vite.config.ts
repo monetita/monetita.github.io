@@ -2,8 +2,19 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr';
 
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), svgr()],
+  build: {
+    rollupOptions: {
+      output: {
+        // Split heavy vendor libraries into separate cached chunks
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'mui-vendor': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'motion-vendor': ['motion/react'],
+        },
+      },
+    },
+  },
 })

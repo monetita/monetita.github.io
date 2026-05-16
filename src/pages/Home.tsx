@@ -1,32 +1,32 @@
 import Hero from "../components/Hero";
 import AboutSection from "../components/AboutSection";
 import ProjectsSection from "../components/ProjectsSection";
-import Contact from "../components/Contact";
-// import ReactFullpage from "@fullpage/react-fullpage";
-import HeroBg, { HeroBgRef } from "../assets/HeroBG.tsx";
+import type { HeroBgRef } from "../assets/HeroBG.tsx";
 import Box from '@mui/material/Box';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState, useCallback } from 'react';
 
-import { motion, useAnimate, useInView } from "motion/react";
-import type { Variants } from "motion/react";
+import { useAnimate, useInView } from "motion/react";
 
-const sections = ['Hero', 'Projects', 'About', 'Contact'];
+// Lazy-load HeroBG — it contains thousands of SVG path points and
+// should not block the initial render of visible page content.
+const HeroBg = lazy(() => import("../assets/HeroBG"));
+
+const sections = ['Hero', 'Projects', 'About'];
 
 const Home = () => {
     const heroRef = useRef<HTMLDivElement>(null);
     const aboutRef = useRef<HTMLDivElement | null>(null);
     const projectsRef = useRef<HTMLDivElement>(null);
-    const contactRef = useRef<HTMLDivElement>(null);
     const logoRef = useRef<SVGSVGElement>(null);
     const heroBgRef = useRef<HeroBgRef>(null);
     const scrollRef = useRef(null);
-    const sectionRefs = [heroRef, projectsRef, aboutRef, contactRef];
     const [activeIndex, setActiveIndex] = useState(0);
+    const [projectAnimState, setProjectAnimState] = useState<'initial' | 'visible' | 'exitTop'>('initial');
+    const projectAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isHeroInView = useInView(heroRef, { margin: "-10% 0px -10% 0px" });
     const isAboutInView = useInView(aboutRef, { margin: "-10% 0px -10% 0px" });
     const isProjectsInView = useInView(projectsRef, { margin: "-10% 0px -10% 0px" });
-    const isContactInView = useInView(contactRef, { margin: "-10% 0px -10% 0px" });
-    const [scope, animate] = useAnimate();
+    const [, animate] = useAnimate();
 
     const getInitialDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
         if (window.matchMedia("(min-width: 1200px)").matches) return 'desktop';
@@ -80,7 +80,8 @@ const Home = () => {
     const handleHeroInView = (reverse: boolean = false) => {
         const duration = 0.75;
         if (reverse) {
-            // Revert to original viewBox based on device type
+            if (projectAnimTimerRef.current) clearTimeout(projectAnimTimerRef.current);
+            setProjectAnimState('initial');
             heroBgRef.current?.bubbleUp(true);
             heroBgRef.current?.restartStarAnimation();
             animate(logoRef.current as SVGSVGElement, { viewBox: getOriginalViewBox() }, { duration: duration });
@@ -89,47 +90,50 @@ const Home = () => {
 
     const handleAboutInView = (reverse: boolean = false) => {
         const duration = 0.5;
+        if (!reverse) {
+            setProjectAnimState('exitTop');
+        }
         if(reverse) {
             animate(logoRef.current as SVGSVGElement, { rotate: 0 }, { duration: 0.75 });
         }
-        
+
         if (deviceType === 'desktop') {
             animate(logoRef.current as SVGSVGElement, { viewBox: "0 640 1440 1801" }, { duration: duration, delay: 0 });
         }
         else {
-            animate(logoRef.current as SVGSVGElement, { viewBox: "0 1300 1440 1801" }, { duration: duration * 1.25, delay: 0 });
+            animate(logoRef.current as SVGSVGElement, { viewBox: "400 -300 1440 1801" }, { duration: duration * 1.25, delay: 0 });
         }
-        
+
     };
-    
+
     const handleProjectsInView = (reverse: boolean = false) => {
         const duration = 1.25;
         if (!reverse) {
-    
             heroBgRef.current?.bubbleUp();
             heroBgRef.current?.stopStarAnimation();
+            // Delay project bubbles so hero bubbles visibly start first
+            if (projectAnimTimerRef.current) clearTimeout(projectAnimTimerRef.current);
+            projectAnimTimerRef.current = setTimeout(() => setProjectAnimState('visible'), 100);
         }
         if (reverse) {
+            // Coming back from about — bubbles are already off top, bring them back down
+            setProjectAnimState('visible');
             animate(logoRef.current as SVGSVGElement, { rotate: 0 }, { duration: 0.75 });
         }
         if (deviceType === 'desktop') {
             const currentViewBox = logoRef.current?.getAttribute('viewBox') || getOriginalViewBox();
-            animate(logoRef.current as SVGSVGElement, { viewBox: [currentViewBox, "0 640 1440 1801", "-1000 600 5040 4801"] }, { duration: duration, delay: 0, times: [0, 0.3, 1], ease: "easeInOut"});
+            animate(logoRef.current as SVGSVGElement, { viewBox: [currentViewBox, "0 640 1440 1801", "0 640 1440 1801", "-1000 600 5040 4801"] }, { duration: duration, delay: 0, times: [0, 0.4, 0.6, 1], ease: "easeInOut"});
         }
         else {
             const currentViewBox = logoRef.current?.getAttribute('viewBox') || getOriginalViewBox();
-            animate(logoRef.current as SVGSVGElement, { viewBox: [currentViewBox, "0 1300 1440 1801", "600 450 2040 4801"] }, { duration: duration * 1.25, delay: 0, times: [0 ,0.30, 1] });
+            const widthRatio = window.innerWidth / 375;
+            const heightRatio = window.innerHeight / 667;
+            const maxRatio = Math.max(widthRatio, heightRatio);
+            const newX = 600 / maxRatio;
+            const newY = 450 / maxRatio;
+            animate(logoRef.current as SVGSVGElement, { viewBox: [currentViewBox, "0 1300 1440 1801", "0 1300 1440 1801", `${newX} ${newY} 2040 4801`] }, { duration: duration * 1.25, delay: 0, times: [0 ,0.4, 0.6, 1] });
         }
 
-    };
-
-    const handleContactInView = (reverse: boolean = false) => {
-        if (!reverse) {
-            animate(logoRef.current as SVGSVGElement, { viewBox: "100 450 2040 4801", rotate: -15 }, { duration: 0.75 });
-        }
-        else {
-
-        }
     };
 
     const handleSectionInView = (index: number, reverse: boolean = false) => {
@@ -142,9 +146,6 @@ const Home = () => {
                 break;
             case sections.indexOf('About'):
                 handleAboutInView(reverse);
-                break;
-            case sections.indexOf('Contact'):
-                handleContactInView(reverse);
                 break;
         }
     };
@@ -159,9 +160,6 @@ const Home = () => {
         else if (activeIndex != 2 && isAboutInView) {
             return sections.indexOf('About');
         }
-        else if (activeIndex != 3 && isContactInView) {
-            return sections.indexOf('Contact');
-        }
         return activeIndex;
     };
 
@@ -175,84 +173,31 @@ const Home = () => {
             handleSectionInView(nextIndex, true);
         }
         setActiveIndex(nextIndex);
-    }, [isHeroInView, isAboutInView, isProjectsInView, isContactInView, deviceType, getOriginalViewBox, animate]);
-
-    // useEffect(() => {
-    //     const container = scrollContainerRef.current;
-    //     if (!container) return;
-
-    //     const handleScroll = () => {
-    //         gsap.to(".green", { rotation: 27, x: 100, duration: 1 });
-    //         const containerTop = container.getBoundingClientRect().top;
-    //         const closestIndex = sectionRefs.reduce((closestIdx, section, i) => {
-    //             const rect = section.current?.getBoundingClientRect();
-    //             if (!rect) return closestIdx;
-    //             const offset = Math.abs(rect.top - containerTop);
-    //             const closestRect = sectionRefs[closestIdx].current?.getBoundingClientRect();
-    //             const closestOffset = Math.abs((closestRect?.top ?? 0) - containerTop);
-    //             return offset < closestOffset ? i : closestIdx;
-    //         }, 0);
-    //         setActiveIndex(closestIndex);
-    //         handleScrollHeroBackground(closestIndex);
-    //     };
-
-    //     container.addEventListener('scroll', handleScroll, { passive: true });
-    //     return () => container.removeEventListener('scroll', handleScroll);
-    // }, []);
-
-    // const scrollToSection = (index: number) => {
-    //     sectionRefs[index].current?.scrollIntoView({ behavior: 'smooth' });
-    // };
-    // const handleScrollHeroBackground = (sectionIndex: number) => {
-    //     const shouldBeTransparent = sectionIndex != 0;
-    //     const ids = ['bubbles', 'gears'];
-    //     ids.forEach(id => {
-    //         const el = document.getElementById(id);
-    //         if (el) {
-    //             if (shouldBeTransparent) {
-    //                 el.classList.add('transparent');
-    //             } else {
-    //                 el.classList.remove('transparent');
-    //             }
-    //         }
-    //     });
-    // };
-
+    }, [isHeroInView, isAboutInView, isProjectsInView, deviceType, getOriginalViewBox, animate]);
 
     return (
         <Box id="main" ref={scrollRef} sx={{ bgcolor: "color1.main" }}>
-
-
-
-
-            <HeroBg ref={heroBgRef} logoRef={logoRef as React.RefObject<SVGSVGElement>}
-                aboutRef={aboutRef as React.RefObject<HTMLDivElement>} deviceType={deviceType} />
+            <Suspense fallback={null}>
+                <HeroBg ref={heroBgRef} logoRef={logoRef as React.RefObject<SVGSVGElement>}
+                    aboutRef={aboutRef as React.RefObject<HTMLDivElement>} deviceType={deviceType} />
+            </Suspense>
             <Hero ref={heroRef as React.RefObject<HTMLDivElement>}
-                aboutRef={aboutRef as React.RefObject<HTMLDivElement>} deviceType={deviceType} />
-            <ProjectsSection ref={projectsRef as React.RefObject<HTMLDivElement>} deviceType={deviceType} />
+                projectsRef={projectsRef as React.RefObject<HTMLDivElement>}
+                deviceType={deviceType} />
+            <ProjectsSection ref={projectsRef as React.RefObject<HTMLDivElement>} deviceType={deviceType} animationState={projectAnimState} />
             <AboutSection ref={aboutRef as React.RefObject<HTMLDivElement>}
                 projectsRef={projectsRef as React.RefObject<HTMLDivElement>}
-                contactRef={contactRef as React.RefObject<HTMLDivElement>}
                 deviceType={deviceType}
             />
-            <Contact ref={contactRef as React.RefObject<HTMLDivElement>} deviceType={deviceType} />
-
             <div className="dot-nav">
                 {sections.map((_, index) => (
                     <div
                         key={index}
                         className={`dot ${activeIndex === index ? 'active' : ''}`}
-                    // onClick={() => scrollToSection(index)}
                     />
                 ))}
             </div>
-            {/* <Section ref={heroRef as React.RefObject<HTMLDivElement>}><div id="box1"></div></Section>
-            <Section ref={aboutRef as React.RefObject<HTMLDivElement>}><div id="box2"></div></Section>
-            <Section ref={projectsRef as React.RefObject<HTMLDivElement>}><div id="box3"></div></Section>
-            <Section ref={contactRef as React.RefObject<HTMLDivElement>}><div id="box4"></div></Section> */}
         </Box>
-
-
     )
 }
 

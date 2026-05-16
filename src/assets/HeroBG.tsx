@@ -1,7 +1,6 @@
 import React from 'react';
-import { useState, useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
+import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 import { motion, useAnimate, animate } from "motion/react";
-import type { Variants } from "motion/react";
 
 
 interface HeroBgProps {
@@ -17,14 +16,9 @@ export interface HeroBgRef {
       restartStarAnimation: () => void;
 }
 
-const HeroBg = forwardRef<HeroBgRef, HeroBgProps>(({ className = "", logoRef = null, aboutRef = null, deviceType = 'desktop' }, ref) => {
-      const getInitialDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
-            if (window.matchMedia("(min-width: 1200px)").matches) return 'desktop';
-            if (window.matchMedia("(min-width: 768px)").matches) return 'tablet';
-            return 'mobile';
-      };
+const HeroBg = forwardRef<HeroBgRef, HeroBgProps>(({ className = "", logoRef = null, aboutRef: _aboutRef = null, deviceType = 'desktop' }, ref) => {
 
-      
+
 
       const getViewBox = (): string => {
             switch (deviceType) {
@@ -206,7 +200,7 @@ const HeroBg = forwardRef<HeroBgRef, HeroBgProps>(({ className = "", logoRef = n
                         animateBubbles(
                               element as Element,
                               {
-                                    y: deviceType === 'desktop' ? -1200 : -3000,
+                                    y: deviceType === 'desktop' ? -1200 : -4000,
                                     // opacity: [1, 1, 0.7]
                               },
                               {

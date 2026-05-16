@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { motion } from 'motion/react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -13,7 +13,11 @@ interface ProjectBubbleProps {
   color: string;
   animationDelay?: number; // Delay for staggered animations
   deviceType?: 'mobile' | 'tablet' | 'desktop';
+  animationState?: 'initial' | 'visible' | 'exitTop';
 }
+
+const ASSUMED_MOBILE_WIDTH = 375;
+const ASSUMED_MOBILE_HEIGHT = 667;
 
 const ProjectBubble: React.FC<ProjectBubbleProps> = ({
   project,
@@ -23,45 +27,75 @@ const ProjectBubble: React.FC<ProjectBubbleProps> = ({
   color,
   animationDelay = 0,
   deviceType = 'desktop',
+  animationState = 'initial',
 }) => {
   const navigate = useNavigate();
   const bubbleRef = useRef<HTMLDivElement>(null);
+  const [adjustedX, setAdjustedX] = useState(x);
+  const [adjustedY, setAdjustedY] = useState(y);
+  const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleClick = () => {
+  const updatePosition = useCallback(() => {
+    if (deviceType === 'mobile') {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const widthRatio = screenWidth / ASSUMED_MOBILE_WIDTH;
+      const heightRatio = screenHeight / ASSUMED_MOBILE_HEIGHT;
+      const heightOffset = (screenHeight - ASSUMED_MOBILE_HEIGHT) / 2;
+      setAdjustedX(x / widthRatio);
+      setAdjustedY((y / heightRatio) + (heightOffset / ASSUMED_MOBILE_HEIGHT) * 100);
+    } else {
+      setAdjustedX(x);
+      setAdjustedY(y);
+    }
+  }, [deviceType, x, y]);
+
+  useEffect(() => {
+    updatePosition();
+
+    const handleResize = () => {
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(updatePosition, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+    };
+  }, [updatePosition]);
+
+  const handleClick = useCallback(() => {
     const titleSlug = project.title.replace(/\s+/g, '-').toLowerCase();
     navigate(`/project/${titleSlug}`);
-  };
+  }, [project.title, navigate]);
+
+  const yTarget = animationState === 'visible' ? 0 : animationState === 'exitTop' ? '-120vh' : '110vh';
+
+  const titleFontSize = `${Math.max(size * 0.07, 9)}px`;
+  const placeholderFontSize = `${Math.max(size * 0.15, 20)}px`;
 
   return (
     <motion.div
       ref={bubbleRef}
       style={{
         position: 'absolute',
-        left: `${x}%`,
-        top: `${y}%`,
-        width: deviceType === 'mobile' ? `${size}vw` : deviceType === 'tablet' ? `${size}vh` : `${size}vh`,
-        height: deviceType === 'mobile' ? `${size}vw` : deviceType === 'tablet' ? `${size}vh` : `${size}vh`,
+        left: `${adjustedX}%`,
+        top: `${adjustedY}%`,
+        width: deviceType === 'mobile' ? `${size}vw` : `${size}dvh`,
+        height: deviceType === 'mobile' ? `${size}vw` : `${size}dvh`,
         cursor: 'pointer',
-        zIndex: 1
+        // zIndex: 1
       }}
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ 
-        scale: 1, 
-        opacity: 1,
-      }}
-      exit={{ 
-        scale: 0, 
-        opacity: 0,
-        transition: {
-          duration: 0.6,
-          ease: "easeIn"
+      initial={{ y: '110vh' }}
+      animate={{ y: yTarget }}
+      transition={{
+        y: {
+          duration: animationState === 'visible' ? 0.8 : 0.6,
+          delay: animationDelay,
+          ease: animationState === 'visible' ? [0.22, 1, 0.36, 1] : 'easeIn',
         }
       }}
-      transition={{
-        scale: { duration: 1.2, delay: animationDelay, ease: "easeOut" },
-        opacity: { duration: 1.2, delay: animationDelay, ease: "easeInOut" },
-      }}
-      key={project.title}
       whileHover={{ scale: 1.1, zIndex: 10 }}
       whileTap={{ scale: 0.95 }}
       onClick={handleClick}
@@ -85,62 +119,76 @@ const ProjectBubble: React.FC<ProjectBubbleProps> = ({
           }
         }}
       >
-        {project.images && project.images[0] ? (
-          <Box
-            component="img"
-            src={project.images[0]}
-            alt={project.title}
-            sx={{
-              width: '60%',
-              height: '60%',
-              objectFit: 'cover',
-              borderRadius: '50%',
-              marginBottom: '5%'
-            }}
-          />
-        ) : (
-          <Box
-            sx={{
-              width: '60%',
-              height: '60%',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(0, 0, 0, 0.1)',
-              marginBottom: '5%',
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={project.title}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
+            style={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              width: '100%',
             }}
           >
+            {project.images && project.images[0] ? (
+              <Box
+                component="img"
+                src={project.images[0]}
+                alt={project.title}
+                loading="lazy"
+                sx={{
+                  width: '60%',
+                  height: '60%',
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                  marginBottom: '5%'
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: '60%',
+                  height: '60%',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                  marginBottom: '5%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: placeholderFontSize, color: 'text.secondary' }}
+                >
+                  {project.title.charAt(0)}
+                </Typography>
+              </Box>
+            )}
             <Typography
               variant="body2"
               sx={{
-                fontSize: `${Math.max(size * 0.15, 20)}px`,
-                color: 'text.secondary'
+                fontSize: titleFontSize,
+                fontWeight: 'bold',
+                color: 'text.primary',
+                textAlign: 'center',
+                lineHeight: 1.2,
+                wordBreak: 'break-word',
+                maxWidth: '85%',
+                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
               }}
             >
-              {project.title.charAt(0)}
+              {project.title}
             </Typography>
-          </Box>
-        )}
-        <Typography
-          variant="body2"
-          sx={{
-            fontSize: `${Math.max(size * 0.07, 9)}px`,
-            fontWeight: 'bold',
-            color: 'text.primary',
-            textAlign: 'center',
-            lineHeight: 1.2,
-            wordBreak: 'break-word',
-            maxWidth: '85%',
-            textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-          }}
-        >
-          {project.title}
-        </Typography>
+          </motion.div>
+        </AnimatePresence>
       </Box>
     </motion.div>
   );
 };
 
-export default ProjectBubble;
-
+export default React.memo(ProjectBubble);
