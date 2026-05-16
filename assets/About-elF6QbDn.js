@@ -1,0 +1,1 @@
+import{j as s}from"./mui-vendor-B1s48-YN.js";import"./react-vendor-B_UxpChw.js";const o=({className:t=""})=>s.jsxs("div",{className:`section ${t}`,children:[s.jsx("h1",{children:"About"}),s.jsx("p",{children:"This is the about page."})]});export{o as default};
