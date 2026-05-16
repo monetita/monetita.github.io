@@ -14,7 +14,7 @@ const Section: React.FC<SectionProps> = ({className = "", ref=null, id="", child
         <Box id={id} ref={ref} className={`section ${className}`} sx={{
             xs:{
                 margin: "0 auto",
-                padding: "0 1rem"
+                padding: "0 0rem"
             },
             md:{
                 margin: "0 auto",

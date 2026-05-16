@@ -43,25 +43,25 @@ body {
 }
 
 #box1 {
-    height: 100vh;
+    height: 100dvh;
     background-color: lightblue;
 }
 #box2 {
-    height: 100vh;
+    height: 100dvh;
     background-color: lightgreen;
 }
 #box3 {
-    height: 100vh;
+    height: 100dvh;
     background-color: lightcoral;
 }
 #box4 {
-    height: 100vh;
+    height: 100dvh;
     background-color: lightgoldenrodyellow;
 }
 
 .section {
     
-    height: 100vh;
+    height: 100dvh;
     position: relative;
     scroll-snap-align: start;
 }
@@ -79,7 +79,7 @@ body {
     scroll-snap-type: y mandatory;
     overflow-y: scroll;
     overflow-x: hidden;
-    height: 100vh;
+    height: 100dvh;
     -ms-overflow-style: none;  /* Hide scrollbar for Internet Explorer and Edge */
     scrollbar-width: none;  /* Hide scrollbar for Firefox */
 }
@@ -95,6 +95,7 @@ body {
 #about{
     /*background-color: #888888;*/
     /* top: -55vh; */
+    /* background-color: red; */
 }
 
 #projects {
@@ -102,21 +103,21 @@ body {
 }
 
 #about, #projects, #contact {
-    height: 100vh;
+    height: 100dvh;
     width: 100vw;
     position: relative;
     /* scroll-snap-align: start; */
 }
 
 #projects, #contact {
-    padding-top: 5vh ;
+    padding-top: 4dvh ;
 }
 
 #hero {
     /* position: absolute;
     top:0; */
     z-index: 100;
-    height: 100vh;
+    height: 100dvh;
     width: 100vw;
     /* scroll-snap-align: start; */
 }
@@ -125,7 +126,7 @@ body {
     
     width: 100vw;
     /* height: 155vh; */
-    height: 100vh;;
+    height: 100dvh;;
     z-index: 1;
     pointer-events: none;
     position: absolute;

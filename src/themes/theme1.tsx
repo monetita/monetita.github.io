@@ -131,7 +131,7 @@ Theme1.typography.h2 = {
 
 Theme1.typography.body1 = {
     fontFamily: Theme1.typography.fontFamily,
-    fontSize: '0.5rem',
+    fontSize: '0.8rem',
     '@media (min-width:600px)': {
         fontSize: '1.2rem',
     },
